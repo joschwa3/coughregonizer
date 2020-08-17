@@ -22,6 +22,11 @@ random.shuffle(train_imgs)
 
 
 def read_proc_images(images_list):
+    """
+    Read and process images, append to X and y lists
+    :param images_list:
+    :return:
+    """
     X = []
     y = []
 
@@ -32,15 +37,15 @@ def read_proc_images(images_list):
             y.append(1)
         elif 'neg_chunks' in file:
             y.append(0)
-    #for labels in y:
-    #    print(labels)
-    #print(len(y))
-    #print(len(X))
     return X, y
 
 
 def fifteen_sec_chunks(wav_file):
-    # print(wav_file)
+    """
+    Take each .wav file of both positive and negative identified covid patients and split them into fifteen seconds chunks.
+    :param wav_file:
+    :return:
+    """
     count = 1
     for i in range(1, 1000, 15):
         t1 = i * 1000
@@ -48,7 +53,6 @@ def fifteen_sec_chunks(wav_file):
         file_branch = wav_file.split('-')[0]
         file_id = wav_file.split('-')[1]
         file_stem = wav_file.split('-')[2]
-        # print(file_branch)
         new_audio = AudioSegment.from_wav(wav_file)
         new_audio = new_audio[t1:t2]
         new_audio.export('{}_chunks/'.format(file_branch) + str(file_id) + '_' +
@@ -57,7 +61,11 @@ def fifteen_sec_chunks(wav_file):
 
 
 def ten_sec_chunks(wav_file):
-    # print(wav_file)
+    """
+    Take each .wav file of both positive and negative identified covid patients and split them into ten seconds chunks.
+    :param wav_file:
+    :return:
+    """
     count = 1
     for i in range(1, 1000, 10):
         t1 = i * 1000
@@ -65,7 +73,6 @@ def ten_sec_chunks(wav_file):
         file_branch = wav_file.split('-')[0]
         file_id = wav_file.split('-')[1]
         file_stem = wav_file.split('-')[2]
-        # print(file_branch)
         new_audio = AudioSegment.from_wav(wav_file)
         new_audio = new_audio[t1:t2]
         new_audio.export('{}_chunks/'.format(file_branch) + str(file_id) + '_' +
@@ -74,7 +81,11 @@ def ten_sec_chunks(wav_file):
 
 
 def five_sec_chunks(wav_file):
-    # print(wav_file)
+    """
+    Take each .wav file of both positive and negative identified covid patients and split them into five seconds chunks.
+    :param wav_file:
+    :return:
+    """
     count = 1
     for i in range(1, 1000, 5):
         t1 = i * 1000
@@ -82,7 +93,6 @@ def five_sec_chunks(wav_file):
         file_branch = wav_file.split('-')[0]
         file_id = wav_file.split('-')[1]
         file_stem = wav_file.split('-')[2]
-        # print(file_branch)
         new_audio = AudioSegment.from_wav(wav_file)
         new_audio = new_audio[t1:t2]
         new_audio.export('{}_chunks/'.format(file_branch) + str(file_id) + '_' +
@@ -91,6 +101,10 @@ def five_sec_chunks(wav_file):
 
 
 def file_creator():
+    """
+
+    :return:
+    """
     mp3s = []
     for directories in paths:
         for objects in os.listdir(directories):
@@ -119,12 +133,10 @@ def file_creator():
 
     for g in labels:
         type = g.replace('_', '')[0]
-        # print(type)
         pathlib.Path(f'img_data/{g}').mkdir(parents=True, exist_ok=True)
         for filename in os.listdir('{}/{}'.format(main_path, g)):
             cough_split = '{}/{}/{}'.format(main_path, g, filename)
             y, sr = librosa.load(cough_split, mono=True, duration=5)
-            # print(y.shape)
             plt.specgram(y, NFFT=2048, Fs=2, Fc=0, noverlap=128, sides='default', mode='default', scale='dB')
             plt.axis('off')
             plt.savefig(f'img_data/{g}/{type + filename[:-3].replace(".", "")}.png')
@@ -132,6 +144,10 @@ def file_creator():
 
 
 def network_create():
+    """
+    Network creation function
+    :return:
+    """
     model = models.Sequential()
     model.add(layers.Conv2D(128, (3, 3), activation='sigmoid', input_shape=(250, 250, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
@@ -150,6 +166,12 @@ def network_create():
 
 
 def fit_keras_model(training_data, model):
+    """
+    Model function
+    :param training_data:
+    :param model:
+    :return:
+    """
     X, y = read_proc_images(training_data)
     for thing in X:
         print(thing)
@@ -187,6 +209,11 @@ def fit_keras_model(training_data, model):
 
 
 def validate_model(modelinfo):
+    """
+    Model validation.  Note, this is causing PyCharm to hand when the two plots are displayed.  Might need a break.
+    :param modelinfo:
+    :return:
+    """
     accuracy = modelinfo.history['acc']
     val_accuracy = modelinfo.history['val_acc']
     loss = modelinfo.history['loss']
@@ -210,6 +237,10 @@ def validate_model(modelinfo):
 
 
 def main():
+    """
+    Main function, nothing special here.
+    :return:
+    """
     file_creator()
     model = network_create()
     results = fit_keras_model(train_imgs, model)
